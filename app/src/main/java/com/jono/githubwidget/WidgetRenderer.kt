@@ -42,8 +42,10 @@ object WidgetRenderer {
         val item: Item? = null,
         val header: Boolean = false,
         val expands: Boolean = true,
+        /** Shows the GitHub app's icon instead of the newest repo's. */
+        val ghArt: Boolean = false,
     ) {
-        TILE(R.layout.widget_tile, SizeF(50f, 50f), "latest repo's icon"),
+        TILE(R.layout.widget_tile, SizeF(50f, 50f), "GitHub icon; tap for the full list", ghArt = true),
         STRIP_S(R.layout.widget_strip_s, SizeF(150f, 50f), "latest repo: icon, name, CI + commit, details",
             text = true, sub = true),
         STRIP(R.layout.widget_strip, SizeF(220f, 50f), "latest repo | its text | next 4 as a 2×2 grid",
@@ -174,8 +176,18 @@ object WidgetRenderer {
 
         // --- 1-row sizes: the newest repo, then the next few as icons ---
         val top = m.rows.firstOrNull()
-        val tap = if (top == null) setup else if (kind.expands) panel else open(ctx, OpenActivity.REPO, top.repo.htmlUrl)
-        if (top != null) rv.setImageViewUri(R.id.art, top.icon) else rv.setImageViewResource(R.id.art, R.drawable.tile_placeholder)
+        val tap = when {
+            m.needsToken -> setup
+            kind.ghArt || kind.expands -> panel // the full list, as it looks at 3×2+
+            top != null -> open(ctx, OpenActivity.REPO, top.repo.htmlUrl)
+            else -> panel
+        }
+        when {
+            kind.ghArt && m.ghIcon != null -> rv.setImageViewUri(R.id.art, m.ghIcon)
+            kind.ghArt -> rv.setImageViewResource(R.id.art, R.mipmap.ic_launcher)
+            top != null -> rv.setImageViewUri(R.id.art, top.icon)
+            else -> rv.setImageViewResource(R.id.art, R.drawable.tile_placeholder)
+        }
         rv.setOnClickPendingIntent(R.id.art, tap)
 
         if (kind.text) {
