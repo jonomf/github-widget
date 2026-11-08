@@ -10,8 +10,12 @@ class ReposWidget : AppWidgetProvider() {
     /** Placed, rebooted, or this app updated: redraw with the saved list, then fetch a fresh one. */
     override fun onUpdate(ctx: Context, mgr: AppWidgetManager, ids: IntArray) {
         WidgetRenderer.renderAll(ctx)
-        RefreshJob.schedule(ctx)
-        RefreshJob.now(ctx)
+        try {
+            RefreshJob.schedule(ctx)
+            RefreshJob.now(ctx)
+        } catch (e: Exception) {
+            Crash.record(ctx, e, fatal = false)
+        }
     }
 
     override fun onDisabled(ctx: Context) = RefreshJob.cancel(ctx)
@@ -19,7 +23,11 @@ class ReposWidget : AppWidgetProvider() {
     override fun onReceive(ctx: Context, intent: Intent) {
         super.onReceive(ctx, intent)
         if (intent.action == ACTION_REFRESH) {
-            RefreshJob.now(ctx)
+            try {
+                RefreshJob.now(ctx)
+            } catch (e: Exception) {
+                Crash.record(ctx, e, fatal = false)
+            }
             WidgetRenderer.renderAll(ctx) // shows "updating…"
         }
     }

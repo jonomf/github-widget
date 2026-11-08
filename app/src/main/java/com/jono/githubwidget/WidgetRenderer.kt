@@ -78,16 +78,32 @@ object WidgetRenderer {
     /** In-app views (the expand panel) that mirror the widget and redraw with it. */
     val listeners = CopyOnWriteArraySet<() -> Unit>()
 
+    /** Redraws every placed widget. Never throws: a drawing bug is saved for the setup screen instead. */
     fun renderAll(ctx: Context) {
-        val mgr = AppWidgetManager.getInstance(ctx)
-        val ids = mgr.getAppWidgetIds(ComponentName(ctx, ReposWidget::class.java))
-        if (ids.isNotEmpty()) mgr.updateAppWidget(ids, build(ctx))
+        try {
+            val mgr = AppWidgetManager.getInstance(ctx)
+            val ids = mgr.getAppWidgetIds(ComponentName(ctx, ReposWidget::class.java))
+            if (ids.isNotEmpty()) {
+                mgr.updateAppWidget(ids, build(ctx))
+                @Suppress("DEPRECATION")
+                mgr.notifyAppWidgetViewDataChanged(ids, R.id.list) // re-reads the list rows
+            }
+        } catch (e: Exception) {
+            Crash.record(ctx, e, fatal = false)
+        }
         listeners.forEach { it() }
     }
 
-    /** The biggest view, for the expand panel. */
+    /** The biggest view, for the expand panel (drawn in this app, so rows go straight in). */
     fun buildPanel(ctx: Context): RemoteViews =
-        fill(ctx, RemoteViews(ctx.packageName, Kind.LIST_W.layout), model(ctx), Kind.LIST_W)
+        fill(ctx, RemoteViews(ctx.packageName, Kind.LIST_W.layout), model(ctx), Kind.LIST_W, inApp = true)
+
+    /** Rows for one list style, for ListService: (stable id, row view). */
+    fun listRows(ctx: Context, itemName: String?): List<Pair<Long, RemoteViews>> {
+        val item = Item.values().firstOrNull { it.name == itemName } ?: Item.WIDE
+        val m = model(ctx)
+        return m.rows.map { it.repo.fullName.hashCode().toLong() to itemView(ctx, item, it, m.login) }
+    }
 
     private fun build(ctx: Context): RemoteViews {
         val m = model(ctx)
@@ -147,12 +163,12 @@ object WidgetRenderer {
         return Model(rows, Store.login(ctx), token == null, message, status, Apps.githubIcon(ctx))
     }
 
-    private fun fill(ctx: Context, rv: RemoteViews, m: Model, kind: Kind): RemoteViews {
+    private fun fill(ctx: Context, rv: RemoteViews, m: Model, kind: Kind, inApp: Boolean = false): RemoteViews {
         val setup = activity(ctx, Intent(ctx, MainActivity::class.java), 1)
         val panel = activity(ctx, Intent(ctx, PanelActivity::class.java), 2)
 
         if (kind.item != null) {
-            fillList(ctx, rv, m, kind, kind.item, setup, panel)
+            fillList(ctx, rv, m, kind, kind.item, setup, panel, inApp)
             return rv
         }
 
@@ -195,7 +211,7 @@ object WidgetRenderer {
 
     private fun fillList(
         ctx: Context, rv: RemoteViews, m: Model, kind: Kind, item: Item,
-        setup: PendingIntent, panel: PendingIntent,
+        setup: PendingIntent, panel: PendingIntent, inApp: Boolean,
     ) {
         ghButton(ctx, rv, m)
         val headerVis = if (kind.header) View.VISIBLE else View.GONE
@@ -216,25 +232,19 @@ object WidgetRenderer {
         if (m.needsToken) rv.setOnClickPendingIntent(R.id.empty, setup)
         rv.setEmptyView(R.id.list, R.id.empty)
 
-        val items = RemoteViews.RemoteCollectionItems.Builder().setHasStableIds(true).setViewTypeCount(1)
-        m.rows.forEach { row ->
-            val v = RemoteViews(ctx.packageName, item.layout)
-            v.setImageViewUri(R.id.icon, row.icon)
-            v.setContentDescription(R.id.icon, row.repo.name)
-            v.setOnClickFillInIntent(R.id.row, fill(OpenActivity.REPO, row.repo.htmlUrl))
-            row.app?.let {
-                v.setOnClickFillInIntent(
-                    R.id.icon,
-                    fill(OpenActivity.APP, row.repo.htmlUrl).putExtra(OpenActivity.EXTRA_PKG, it.pkg),
-                )
-            }
-            if (item.text) {
-                bindText(v, row, m.login, item.sub)
-                if (row.update) v.setOnClickFillInIntent(R.id.update, fill(OpenActivity.UPDATE, row.repo.releasesUrl))
-            }
-            items.addItem(row.repo.fullName.hashCode().toLong(), v)
+        if (inApp) {
+            val items = RemoteViews.RemoteCollectionItems.Builder().setHasStableIds(true).setViewTypeCount(1)
+            m.rows.forEach { items.addItem(it.repo.fullName.hashCode().toLong(), itemView(ctx, item, it, m.login)) }
+            rv.setRemoteAdapter(R.id.list, items.build())
+        } else {
+            // The launcher asks ListService for the rows, so a long list never makes the widget
+            // update too big to send (which crashes the app). The URI says which row style.
+            @Suppress("DEPRECATION")
+            rv.setRemoteAdapter(
+                R.id.list,
+                Intent(ctx, ListService::class.java).setData(Uri.parse("repos://list/${item.name}")),
+            )
         }
-        rv.setRemoteAdapter(R.id.list, items.build())
         // Rows say what to open; this sends it to OpenActivity. Must be mutable so rows can fill it in.
         rv.setPendingIntentTemplate(
             R.id.list,
@@ -243,6 +253,24 @@ object WidgetRenderer {
                 PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
             ),
         )
+    }
+
+    private fun itemView(ctx: Context, item: Item, row: Row, login: String?): RemoteViews {
+        val v = RemoteViews(ctx.packageName, item.layout)
+        v.setImageViewUri(R.id.icon, row.icon)
+        v.setContentDescription(R.id.icon, row.repo.name)
+        v.setOnClickFillInIntent(R.id.row, fill(OpenActivity.REPO, row.repo.htmlUrl))
+        row.app?.let {
+            v.setOnClickFillInIntent(
+                R.id.icon,
+                fill(OpenActivity.APP, row.repo.htmlUrl).putExtra(OpenActivity.EXTRA_PKG, it.pkg),
+            )
+        }
+        if (item.text) {
+            bindText(v, row, login, item.sub)
+            if (row.update) v.setOnClickFillInIntent(R.id.update, fill(OpenActivity.UPDATE, row.repo.releasesUrl))
+        }
+        return v
     }
 
     /** The GitHub app's own icon as a button that opens it. */

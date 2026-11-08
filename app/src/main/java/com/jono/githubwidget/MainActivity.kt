@@ -2,6 +2,8 @@ package com.jono.githubwidget
 
 import android.app.Activity
 import android.appwidget.AppWidgetManager
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Intent
 import android.graphics.Typeface
@@ -26,6 +28,8 @@ class MainActivity : Activity() {
     private lateinit var updateStatus: TextView
     private lateinit var matched: TextView
     private lateinit var sizes: TextView
+    private lateinit var errorBox: LinearLayout
+    private var ready = false
     private val redraw: () -> Unit = { runOnUiThread { refreshInfo() } }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,6 +60,21 @@ class MainActivity : Activity() {
             setPadding(0, dp(12), 0, dp(8))
         })
 
+        // --- Last error, if any: shown first so it's visible even if the rest fails ---
+        errorBox = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        col.addView(errorBox)
+        showLastError()
+
+        try {
+            buildSections(col)
+        } catch (e: Exception) {
+            Crash.record(this, e, fatal = false)
+            showLastError()
+        }
+        setContentView(ScrollView(this).apply { addView(col) })
+    }
+
+    private fun buildSections(col: LinearLayout) {
         // --- Token ---
         col.addView(heading("GitHub token"))
         tokenStatus = TextView(this).apply { textSize = 15f; setPadding(0, 0, 0, dp(8)) }
@@ -137,15 +156,47 @@ class MainActivity : Activity() {
         col.addView(heading("Your widgets"))
         sizes = TextView(this).apply { textSize = 14f; setTextIsSelectable(true) }
         col.addView(sizes)
+        ready = true
+    }
 
-        setContentView(ScrollView(this).apply { addView(col) })
+    /** The saved error, with a copy button so it can be pasted to Claude. */
+    private fun showLastError() {
+        errorBox.removeAllViews()
+        val text = Crash.last(this) ?: return
+        errorBox.addView(heading("Last error"))
+        errorBox.addView(note("Something went wrong. Copy this and send it to Claude."))
+        errorBox.addView(TextView(this).apply {
+            this.text = text.lines().take(14).joinToString("\n")
+            textSize = 11f
+            typeface = Typeface.MONOSPACE
+            setTextIsSelectable(true)
+        })
+        errorBox.addView(Button(this).apply {
+            this.text = "Copy error"
+            setOnClickListener {
+                getSystemService(ClipboardManager::class.java)
+                    .setPrimaryClip(ClipData.newPlainText("Repos error", text))
+                Toast.makeText(this@MainActivity, "Copied", Toast.LENGTH_SHORT).show()
+            }
+        })
+        errorBox.addView(Button(this).apply {
+            this.text = "Clear"
+            setOnClickListener {
+                Crash.clear(this@MainActivity)
+                showLastError()
+            }
+        })
     }
 
     override fun onResume() {
         super.onResume()
         WidgetRenderer.listeners.add(redraw)
-        RefreshJob.schedule(this)
-        RefreshJob.now(this)
+        try {
+            RefreshJob.schedule(this)
+            RefreshJob.now(this)
+        } catch (e: Exception) {
+            Crash.record(this, e, fatal = false)
+        }
         WidgetRenderer.renderAll(this)
         refreshInfo()
     }
@@ -156,6 +207,16 @@ class MainActivity : Activity() {
     }
 
     private fun refreshInfo() {
+        try {
+            fillInfo()
+        } catch (e: Exception) {
+            Crash.record(this, e, fatal = false)
+        }
+        showLastError()
+    }
+
+    private fun fillInfo() {
+        if (!ready) return
         val token = Store.token(this)
         val login = Store.login(this)
         val error = Store.error(this)
