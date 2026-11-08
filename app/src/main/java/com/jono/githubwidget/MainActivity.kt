@@ -9,6 +9,8 @@ import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.InputType
+import android.view.Gravity
+import android.widget.ImageView
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
@@ -47,10 +49,20 @@ class MainActivity : Activity() {
             setPadding(pad, pad * 2, pad, pad)
         }
 
-        col.addView(TextView(this).apply {
-            text = getString(R.string.app_name)
-            textSize = 28f
-            setTypeface(typeface, Typeface.BOLD)
+        // Title, with the installed GitHub app's own icon beside it.
+        col.addView(LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            Apps.githubPkg(this@MainActivity)?.let { pkg ->
+                addView(ImageView(this@MainActivity).apply {
+                    setImageDrawable(packageManager.getApplicationIcon(pkg))
+                }, LinearLayout.LayoutParams(dp(40), dp(40)).apply { marginEnd = dp(12) })
+            }
+            addView(TextView(this@MainActivity).apply {
+                text = getString(R.string.app_name)
+                textSize = 28f
+                setTypeface(typeface, Typeface.BOLD)
+            })
         })
         col.addView(TextView(this).apply {
             text = "Your GitHub repos, most recently pushed first, with each one's latest CI run and commit. " +
@@ -234,8 +246,10 @@ class MainActivity : Activity() {
         updateStatus.text = "You're on build $build. This widget's own repo shows an Update chip " +
             "when a newer build is out; download it and open it to install over this version."
 
+        val gh = Apps.githubPkg(this)
+        val ghLine = if (gh != null) "✓ GitHub app found ($gh)\n" else "GitHub app not found, so repos open in the browser\n"
         val apps = Store.visibleRepos(this).mapNotNull { r -> Apps.installed(this, r)?.let { r to it } }
-        matched.text = if (apps.isEmpty()) {
+        matched.text = ghLine + if (apps.isEmpty()) {
             "None found yet. An app matches a repo when its package is com.jono.<repo name without dashes>."
         } else {
             apps.joinToString("\n") { (r, app) ->

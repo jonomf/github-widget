@@ -3,6 +3,10 @@ package com.jono.githubwidget
 import android.app.Activity
 import android.os.Bundle
 import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup
+import android.widget.BaseAdapter
+import android.widget.ListView
 import android.widget.FrameLayout
 import kotlin.math.min
 
@@ -47,6 +51,35 @@ class PanelActivity : Activity() {
     private fun render() {
         if (isFinishing) return
         card.removeAllViews()
-        card.addView(WidgetRenderer.buildPanel(this).apply(this, card))
+        val view = WidgetRenderer.buildPanel(this).apply(this, card)
+        card.addView(view)
+
+        // The header comes from the widget's own layout; the rows are added here, since list
+        // rows drawn inside an app can't use the widget's tap handling.
+        val rows = WidgetRenderer.panelRows(this)
+        val list = view.findViewById<ListView>(R.id.list) ?: return
+        list.emptyView = view.findViewById(R.id.empty)
+        list.adapter = object : BaseAdapter() {
+            override fun getCount() = rows.size
+            override fun getItem(position: Int) = rows[position]
+            override fun getItemId(position: Int) = position.toLong()
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val r = rows[position]
+                val v = r.views.apply(this@PanelActivity, parent)
+                val ctx = this@PanelActivity
+                v.setOnClickListener { Apps.start(ctx, Apps.repoIntent(ctx, r.repoUrl)) }
+                r.appPkg?.let { pkg ->
+                    v.findViewById<View>(R.id.icon)?.setOnClickListener {
+                        Apps.start(ctx, packageManager.getLaunchIntentForPackage(pkg) ?: Apps.repoIntent(ctx, r.repoUrl))
+                    }
+                }
+                if (r.update) {
+                    v.findViewById<View>(R.id.update)?.setOnClickListener {
+                        Apps.start(ctx, Apps.browserIntent(ctx, r.releasesUrl))
+                    }
+                }
+                return v
+            }
+        }
     }
 }

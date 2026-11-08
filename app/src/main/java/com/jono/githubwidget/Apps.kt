@@ -44,9 +44,22 @@ object Apps {
             saved(ctx, "tile:${repo.name}:${repo.language}") { tile(repo.name, repo.language) }
         }
 
+    /**
+     * The GitHub app's package: normally com.github.android, else any app whose home-screen
+     * name is "GitHub" (so a differently packaged build still gets found).
+     */
+    fun githubPkg(ctx: Context): String? {
+        if (installed(ctx, GITHUB) != null) return GITHUB
+        val launcher = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+        return ctx.packageManager.queryIntentActivities(launcher, 0).firstOrNull {
+            it.activityInfo.packageName != ctx.packageName &&
+                it.loadLabel(ctx.packageManager).toString().trim().equals("GitHub", ignoreCase = true)
+        }?.activityInfo?.packageName
+    }
+
     /** The GitHub app's icon, or null if it isn't installed. */
     fun githubIcon(ctx: Context): Uri? {
-        val gh = installed(ctx, GITHUB) ?: return null
+        val gh = githubPkg(ctx)?.let { installed(ctx, it) } ?: return null
         return saved(ctx, "app:${gh.pkg}:${gh.updatedAt}") { appBitmap(ctx, gh.pkg) }
     }
 
@@ -109,7 +122,8 @@ object Apps {
 
     /** A repo page: in the GitHub app when it's installed and takes the link, else the browser. */
     fun repoIntent(ctx: Context, url: String): Intent {
-        val inApp = Intent(Intent.ACTION_VIEW, Uri.parse(url)).setPackage(GITHUB)
+        val gh = githubPkg(ctx) ?: return browserIntent(ctx, url)
+        val inApp = Intent(Intent.ACTION_VIEW, Uri.parse(url)).setPackage(gh)
         return if (ctx.packageManager.resolveActivity(inApp, 0) != null) inApp else browserIntent(ctx, url)
     }
 
@@ -119,13 +133,14 @@ object Apps {
         val probe = Intent(Intent.ACTION_VIEW, Uri.parse("https://example.com"))
         val browser = ctx.packageManager
             .resolveActivity(probe, PackageManager.MATCH_DEFAULT_ONLY)?.activityInfo?.packageName
-        if (browser != null && browser != "android" && browser != GITHUB) intent.setPackage(browser)
+        if (browser != null && browser != "android" && browser != githubPkg(ctx)) intent.setPackage(browser)
         return intent
     }
 
     /** The GitHub app's home, or github.com in the browser if it isn't installed. */
     fun githubIntent(ctx: Context): Intent =
-        ctx.packageManager.getLaunchIntentForPackage(GITHUB) ?: browserIntent(ctx, "https://github.com")
+        githubPkg(ctx)?.let { ctx.packageManager.getLaunchIntentForPackage(it) }
+            ?: browserIntent(ctx, "https://github.com")
 
     fun start(ctx: Context, intent: Intent) {
         try {

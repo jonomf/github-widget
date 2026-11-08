@@ -100,6 +100,22 @@ object WidgetRenderer {
     fun buildPanel(ctx: Context): RemoteViews =
         fill(ctx, RemoteViews(ctx.packageName, Kind.LIST_W.layout), model(ctx), Kind.LIST_W, inApp = true)
 
+    /** One row of the pop-up list: its view, plus what each part opens. */
+    class PanelRow(
+        val views: RemoteViews,
+        val repoUrl: String,
+        val releasesUrl: String,
+        val appPkg: String?,
+        val update: Boolean,
+    )
+
+    fun panelRows(ctx: Context): List<PanelRow> {
+        val m = model(ctx)
+        return m.rows.map {
+            PanelRow(itemView(ctx, Item.WIDE, it, m.login), it.repo.htmlUrl, it.repo.releasesUrl, it.app?.pkg, it.update)
+        }
+    }
+
     /** Rows for one list style, for ListService: (stable id, row view). */
     fun listRows(ctx: Context, itemName: String?): List<Pair<Long, RemoteViews>> {
         val item = Item.values().firstOrNull { it.name == itemName } ?: Item.WIDE
@@ -245,9 +261,7 @@ object WidgetRenderer {
         rv.setEmptyView(R.id.list, R.id.empty)
 
         if (inApp) {
-            val items = RemoteViews.RemoteCollectionItems.Builder().setHasStableIds(true).setViewTypeCount(1)
-            m.rows.forEach { items.addItem(it.repo.fullName.hashCode().toLong(), itemView(ctx, item, it, m.login)) }
-            rv.setRemoteAdapter(R.id.list, items.build())
+            // The pop-up fills this list itself (PanelActivity), with ordinary taps.
         } else {
             // The launcher asks ListService for the rows, so a long list never makes the widget
             // update too big to send (which crashes the app). The URI says which row style.
