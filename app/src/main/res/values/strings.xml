@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Repos</string>
+    <string name="widget_desc">Your GitHub repos, most recently pushed first</string>
+</resources>

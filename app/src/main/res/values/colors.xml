@@ -1,0 +1,14 @@
+<resources>
+    <color name="widget_bg">@android:color/system_neutral1_50</color>
+    <color name="widget_text">@android:color/system_neutral1_900</color>
+    <color name="widget_subtext">@android:color/system_neutral2_700</color>
+    <color name="accent_text">@android:color/system_accent1_600</color>
+    <color name="btn_bg">@android:color/system_accent1_100</color>
+    <color name="btn_text">@android:color/system_accent1_900</color>
+    <color name="icon_tint">@android:color/system_neutral2_700</color>
+    <color name="ci_ok">#FF1A7F37</color>
+    <color name="ci_fail">#FFCF222E</color>
+    <color name="ci_run">#FF9A6700</color>
+    <color name="ci_off">@android:color/system_neutral2_600</color>
+    <color name="icon_bg">#FF24292F</color>
+</resources>

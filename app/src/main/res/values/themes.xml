@@ -1,0 +1,154 @@
+<resources>
+    <style name="AppTheme" parent="@android:style/Theme.DeviceDefault.DayNight" />
+
+    <!-- Expand panel: floats over the home screen; the widget's full list layout is drawn inside it. -->
+    <style name="Panel" parent="@android:style/Theme.DeviceDefault.DayNight">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.45</item>
+    </style>
+
+    <!-- Main repo icon in 1-row sizes: square, as tall as the row. -->
+    <style name="Cover">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:adjustViewBounds">true</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:src">@drawable/tile_placeholder</item>
+        <item name="android:contentDescription">Repo</item>
+    </style>
+
+    <!-- The GitHub app's own icon, as a button. -->
+    <style name="GhButton">
+        <item name="android:layout_width">22dp</item>
+        <item name="android:layout_height">22dp</item>
+        <item name="android:padding">1dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:src">@drawable/ic_open</item>
+        <item name="android:contentDescription">Open the GitHub app</item>
+    </style>
+
+    <style name="IconButton">
+        <item name="android:layout_width">30dp</item>
+        <item name="android:layout_height">30dp</item>
+        <item name="android:padding">6dp</item>
+        <item name="android:scaleType">fitCenter</item>
+    </style>
+
+    <style name="Name">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/widget_text</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="Age">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">6dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">@color/widget_subtext</item>
+        <item name="android:textSize">11sp</item>
+    </style>
+
+    <!-- Latest CI run: "✓ #12", coloured by result. -->
+    <style name="Ci">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">5dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/ci_off</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
+    <!-- Latest commit message: what changed. -->
+    <style name="Msg">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">@color/widget_text</item>
+        <item name="android:alpha">0.85</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="Sub">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">@color/widget_subtext</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
+    <!-- "Update" chip: a newer build of an installed app is on GitHub. -->
+    <style name="UpdateChip">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">6dp</item>
+        <item name="android:background">@drawable/chip_on</item>
+        <item name="android:paddingStart">7dp</item>
+        <item name="android:paddingEnd">7dp</item>
+        <item name="android:paddingTop">2dp</item>
+        <item name="android:paddingBottom">2dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/btn_text</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:text">Update</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
+    <style name="GridCell">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:adjustViewBounds">true</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:padding">2dp</item>
+        <item name="android:src">@drawable/tile_placeholder</item>
+        <item name="android:contentDescription">Repo</item>
+        <item name="android:visibility">invisible</item>
+    </style>
+
+    <style name="HeaderTitle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/widget_text</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:text">Repos</item>
+    </style>
+
+    <style name="Empty">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:gravity">center</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:textColor">@color/widget_subtext</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:text">Loading…</item>
+    </style>
+
+    <style name="RepoList">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:divider">@null</item>
+        <item name="android:dividerHeight">0dp</item>
+        <item name="android:scrollbars">none</item>
+    </style>
+</resources>

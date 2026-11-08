@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 1×1: the most recently pushed repo's icon. Tap for the full list. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:padding="6dp">
+
+    <ImageView
+        android:id="@+id/art"
+        style="@style/Cover"
+        android:layout_gravity="center" />
+</FrameLayout>
