@@ -3,6 +3,8 @@
 
     <!-- Talks to api.github.com to list your repos. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Needed for background refreshes that wait until you're online. No prompt. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- Keeps the 15-minute background refresh scheduled after a reboot. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
