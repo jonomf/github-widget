@@ -209,6 +209,7 @@ object WidgetRenderer {
         if (kind.text) {
             rv.setOnClickPendingIntent(R.id.content, tap)
             ghButton(ctx, rv, m)
+            ClaudeLink.bind(ctx, rv, R.id.claude)
             if (top != null) {
                 bindText(rv, top, m.login, kind.sub)
                 if (top.update) rv.setOnClickPendingIntent(R.id.update, open(ctx, OpenActivity.UPDATE, top.repo.releasesUrl))
@@ -245,6 +246,7 @@ object WidgetRenderer {
         val headerVis = if (kind.header) View.VISIBLE else View.GONE
         rv.setViewVisibility(R.id.title, headerVis)
         rv.setViewVisibility(R.id.updated, headerVis)
+        ClaudeLink.bind(ctx, rv, R.id.claude, room = kind.header)
         rv.setTextViewText(R.id.updated, m.status)
         if (kind.expands) rv.setOnClickPendingIntent(R.id.title, panel)
         rv.setOnClickPendingIntent(

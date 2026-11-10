@@ -159,6 +159,8 @@ class MainActivity : Activity() {
             setOnClickListener { pinWidget() }
         })
 
+        ClaudeLink.addSection(this, col) { WidgetRenderer.renderAll(this) }
+
         // --- Apps matched to repos ---
         col.addView(heading("Apps from your repos"))
         matched = TextView(this).apply { textSize = 14f; setTextIsSelectable(true) }

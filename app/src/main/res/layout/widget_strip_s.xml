@@ -30,6 +30,7 @@
             <TextView android:id="@+id/update" style="@style/UpdateChip" />
             <TextView android:id="@+id/age" style="@style/Age" />
             <ImageView android:id="@+id/gh" style="@style/GhButton" android:layout_marginStart="6dp" />
+            <ImageView android:id="@+id/claude" style="@style/ClaudeLink" />
         </LinearLayout>
 
         <LinearLayout

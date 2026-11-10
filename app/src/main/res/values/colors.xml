@@ -11,4 +11,5 @@
     <color name="ci_run">#FF9A6700</color>
     <color name="ci_off">@android:color/system_neutral2_600</color>
     <color name="icon_bg">#FF24292F</color>
+    <color name="claude_link">@android:color/system_accent1_600</color>
 </resources>

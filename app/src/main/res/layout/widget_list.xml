@@ -20,6 +20,7 @@
         <ImageView android:id="@+id/gh" style="@style/GhButton" />
         <TextView android:id="@+id/title" style="@style/HeaderTitle" />
         <TextView android:id="@+id/updated" style="@style/Age" />
+        <ImageView android:id="@+id/claude" style="@style/ClaudeLink" />
         <ImageView
             android:id="@+id/refresh"
             style="@style/IconButton"
