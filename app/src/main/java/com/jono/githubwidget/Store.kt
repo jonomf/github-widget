@@ -38,6 +38,8 @@ object Store {
         val session: String? = null,
         /** Which version of the details lookup filled this in; older ones get looked up again. */
         val ver: Int = 0,
+        /** The repo's GitHub Pages site, if it has one. */
+        val pages: String? = null,
     ) {
         val releasesUrl get() = "$htmlUrl/releases/latest"
 
@@ -45,7 +47,7 @@ object Store {
             fetchedAt: Long, run: Run?, lastBuild: Int?, lastCommit: String?, session: String?, ver: Int = DETAILS_VER,
         ) = Repo(
             fullName, owner, name, htmlUrl, description, language, pushedAt, isPrivate, fork, archived,
-            true, fetchedAt, run, lastBuild, lastCommit, session, ver,
+            true, fetchedAt, run, lastBuild, lastCommit, session, ver, pages,
         )
 
         fun withDetailsOf(prev: Repo) =
@@ -58,6 +60,7 @@ object Store {
             put("checked", checked); put("fetched", fetchedAt)
             put("lastBuild", lastBuild ?: JSONObject.NULL); put("lastCommit", lastCommit ?: JSONObject.NULL)
             put("session", session ?: JSONObject.NULL); put("ver", ver)
+            put("pages", pages ?: JSONObject.NULL)
             run?.let {
                 put("run", JSONObject().apply {
                     put("status", it.status); put("conclusion", it.conclusion ?: JSONObject.NULL)
@@ -87,6 +90,7 @@ object Store {
                 lastCommit = j.str("lastCommit"),
                 session = j.str("session"),
                 ver = j.optInt("ver"),
+                pages = j.str("pages"),
             )
         }
     }

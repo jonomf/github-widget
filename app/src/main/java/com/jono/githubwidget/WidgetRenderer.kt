@@ -109,6 +109,8 @@ object WidgetRenderer {
         val update: Boolean,
         /** The repo's Claude session link, when it's known and the setting is on. */
         val session: String?,
+        /** The repo's GitHub Pages site, if any. */
+        val pages: String?,
     )
 
     fun panelRows(ctx: Context): List<PanelRow> {
@@ -116,7 +118,7 @@ object WidgetRenderer {
         return m.rows.map {
             PanelRow(
                 itemView(ctx, Item.WIDE, it, m.login), it.repo.htmlUrl, it.repo.releasesUrl, it.app?.pkg,
-                it.update, sessionFor(ctx, it),
+                it.update, sessionFor(ctx, it), it.repo.pages,
             )
         }
     }
@@ -310,6 +312,9 @@ object WidgetRenderer {
         if (item.text) {
             bindText(v, row, login, item.sub)
             if (row.update) v.setOnClickFillInIntent(R.id.update, fill(OpenActivity.UPDATE, row.repo.releasesUrl))
+            val pages = row.repo.pages
+            v.setViewVisibility(R.id.web, if (pages != null) View.VISIBLE else View.GONE)
+            if (pages != null) v.setOnClickFillInIntent(R.id.web, fill(OpenActivity.WEB, pages))
         }
         if (item.sub) {
             val session = sessionFor(ctx, row)

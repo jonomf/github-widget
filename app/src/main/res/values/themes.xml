@@ -152,6 +152,16 @@
         <item name="android:scrollbars">none</item>
     </style>
 
+    <!-- Small tap target at the end of a list row's name line. -->
+    <style name="RowButton">
+        <item name="android:layout_width">22dp</item>
+        <item name="android:layout_height">22dp</item>
+        <item name="android:layout_marginStart">6dp</item>
+        <item name="android:padding">3dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
     <style name="ClaudeLink">
         <item name="android:layout_width">16dp</item>
         <item name="android:layout_height">16dp</item>

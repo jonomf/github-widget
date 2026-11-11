@@ -33,6 +33,12 @@
                 <TextView android:id="@+id/name" style="@style/Name" />
                 <TextView android:id="@+id/update" style="@style/UpdateChip" />
                 <TextView android:id="@+id/age" style="@style/Age" />
+                <!-- Opens the repo's GitHub Pages site in the browser. -->
+                <ImageView
+                    android:id="@+id/web"
+                    style="@style/RowButton"
+                    android:contentDescription="Open the site"
+                    android:src="@drawable/ic_web" />
                 <!-- Opens the Claude session that last pushed to this repo. -->
                 <ImageView
                     android:id="@+id/claude"

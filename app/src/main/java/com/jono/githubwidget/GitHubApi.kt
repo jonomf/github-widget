@@ -91,7 +91,17 @@ object Refresher {
         isPrivate = j.optBoolean("private"),
         fork = j.optBoolean("fork"),
         archived = j.optBoolean("archived"),
+        pages = if (j.optBoolean("has_pages")) pagesUrl(j) else null,
     )
+
+    /** The Pages site: the repo's homepage if it's set (custom domains), else owner.github.io/repo. */
+    private fun pagesUrl(j: JSONObject): String {
+        j.str("homepage")?.takeIf { it.startsWith("http") }?.let { return it }
+        val owner = j.getJSONObject("owner").getString("login").lowercase()
+        val name = j.getString("name")
+        return if (name.lowercase() == "$owner.github.io") "https://$owner.github.io/"
+        else "https://$owner.github.io/$name/"
+    }
 
     private fun details(token: String, repo: Store.Repo, prev: Store.Repo?, detailed: Boolean): Store.Repo {
         // Nothing new since a settled look (finished CI, checked well after the push): reuse it.

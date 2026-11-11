@@ -75,6 +75,11 @@ class PanelActivity : Activity() {
                         Apps.start(ctx, packageManager.getLaunchIntentForPackage(pkg) ?: Apps.repoIntent(ctx, r.repoUrl))
                     }
                 }
+                r.pages?.let { url ->
+                    v.findViewById<View>(R.id.web)?.setOnClickListener {
+                        Apps.start(ctx, Apps.browserIntent(ctx, url))
+                    }
+                }
                 r.session?.let { url ->
                     v.findViewById<View>(R.id.claude)?.setOnClickListener {
                         Apps.start(ctx, Intent(Intent.ACTION_VIEW, Uri.parse(url)))
