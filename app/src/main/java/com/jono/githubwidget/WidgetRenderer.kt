@@ -107,14 +107,21 @@ object WidgetRenderer {
         val releasesUrl: String,
         val appPkg: String?,
         val update: Boolean,
+        /** The repo's Claude session link, when it's known and the setting is on. */
+        val session: String?,
     )
 
     fun panelRows(ctx: Context): List<PanelRow> {
         val m = model(ctx)
         return m.rows.map {
-            PanelRow(itemView(ctx, Item.WIDE, it, m.login), it.repo.htmlUrl, it.repo.releasesUrl, it.app?.pkg, it.update)
+            PanelRow(
+                itemView(ctx, Item.WIDE, it, m.login), it.repo.htmlUrl, it.repo.releasesUrl, it.app?.pkg,
+                it.update, sessionFor(ctx, it),
+            )
         }
     }
+
+    private fun sessionFor(ctx: Context, row: Row) = row.repo.session?.takeIf { ClaudeLink.shown(ctx) }
 
     /** Rows for one list style, for ListService: (stable id, row view). */
     fun listRows(ctx: Context, itemName: String?): List<Pair<Long, RemoteViews>> {
@@ -203,6 +210,12 @@ object WidgetRenderer {
             kind.ghArt -> rv.setImageViewResource(R.id.art, R.mipmap.ic_launcher)
             top != null -> rv.setImageViewUri(R.id.art, top.icon)
             else -> rv.setImageViewResource(R.id.art, R.drawable.tile_placeholder)
+        }
+        if (kind == Kind.TILE) {
+            // Update badge: an installed app from one of your repos has a newer build on GitHub.
+            val updates = m.rows.count { it.update }
+            rv.setViewVisibility(R.id.badge, if (updates > 0) View.VISIBLE else View.GONE)
+            rv.setContentDescription(R.id.badge, "$updates update" + (if (updates == 1) "" else "s") + " available")
         }
         rv.setOnClickPendingIntent(R.id.art, tap)
 
@@ -297,6 +310,11 @@ object WidgetRenderer {
         if (item.text) {
             bindText(v, row, login, item.sub)
             if (row.update) v.setOnClickFillInIntent(R.id.update, fill(OpenActivity.UPDATE, row.repo.releasesUrl))
+        }
+        if (item.sub) {
+            val session = sessionFor(ctx, row)
+            v.setViewVisibility(R.id.claude, if (session != null) View.VISIBLE else View.GONE)
+            if (session != null) v.setOnClickFillInIntent(R.id.claude, fill(OpenActivity.CLAUDE, session))
         }
         return v
     }

@@ -11,4 +11,16 @@
         android:id="@+id/art"
         style="@style/Cover"
         android:layout_gravity="center" />
+
+    <!-- Shown when any installed app from your repos has a newer build on GitHub. -->
+    <ImageView
+        android:id="@+id/badge"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_gravity="bottom|end"
+        android:background="@drawable/badge_bg"
+        android:contentDescription="Updates available"
+        android:padding="3dp"
+        android:src="@drawable/ic_update"
+        android:visibility="gone" />
 </FrameLayout>

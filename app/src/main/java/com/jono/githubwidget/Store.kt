@@ -34,15 +34,22 @@ object Store {
         val lastBuild: Int? = null,
         /** Latest commit message, when the repo has no Actions runs. */
         val lastCommit: String? = null,
+        /** The Claude Code session that last pushed here (a commit's "Claude-Session:" line). */
+        val session: String? = null,
+        /** Which version of the details lookup filled this in; older ones get looked up again. */
+        val ver: Int = 0,
     ) {
         val releasesUrl get() = "$htmlUrl/releases/latest"
 
-        fun withDetails(fetchedAt: Long, run: Run?, lastBuild: Int?, lastCommit: String?) = Repo(
+        fun withDetails(
+            fetchedAt: Long, run: Run?, lastBuild: Int?, lastCommit: String?, session: String?, ver: Int = DETAILS_VER,
+        ) = Repo(
             fullName, owner, name, htmlUrl, description, language, pushedAt, isPrivate, fork, archived,
-            true, fetchedAt, run, lastBuild, lastCommit,
+            true, fetchedAt, run, lastBuild, lastCommit, session, ver,
         )
 
-        fun withDetailsOf(prev: Repo) = withDetails(prev.fetchedAt, prev.run, prev.lastBuild, prev.lastCommit)
+        fun withDetailsOf(prev: Repo) =
+            withDetails(prev.fetchedAt, prev.run, prev.lastBuild, prev.lastCommit, prev.session, prev.ver)
 
         fun toJson(): JSONObject = JSONObject().apply {
             put("full", fullName); put("owner", owner); put("name", name); put("url", htmlUrl)
@@ -50,6 +57,7 @@ object Store {
             put("pushed", pushedAt); put("private", isPrivate); put("fork", fork); put("archived", archived)
             put("checked", checked); put("fetched", fetchedAt)
             put("lastBuild", lastBuild ?: JSONObject.NULL); put("lastCommit", lastCommit ?: JSONObject.NULL)
+            put("session", session ?: JSONObject.NULL); put("ver", ver)
             run?.let {
                 put("run", JSONObject().apply {
                     put("status", it.status); put("conclusion", it.conclusion ?: JSONObject.NULL)
@@ -77,9 +85,14 @@ object Store {
                 },
                 lastBuild = if (j.isNull("lastBuild") || !j.has("lastBuild")) null else j.getInt("lastBuild"),
                 lastCommit = j.str("lastCommit"),
+                session = j.str("session"),
+                ver = j.optInt("ver"),
             )
         }
     }
+
+    /** Bumped when the details lookup learns something new (2: Claude session links). */
+    const val DETAILS_VER = 2
 
     /** A string field, or null when missing, JSON null or blank. */
     fun JSONObject.str(key: String): String? =

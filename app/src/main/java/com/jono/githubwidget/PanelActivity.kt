@@ -1,6 +1,8 @@
 package com.jono.githubwidget
 
 import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -71,6 +73,11 @@ class PanelActivity : Activity() {
                 r.appPkg?.let { pkg ->
                     v.findViewById<View>(R.id.icon)?.setOnClickListener {
                         Apps.start(ctx, packageManager.getLaunchIntentForPackage(pkg) ?: Apps.repoIntent(ctx, r.repoUrl))
+                    }
+                }
+                r.session?.let { url ->
+                    v.findViewById<View>(R.id.claude)?.setOnClickListener {
+                        Apps.start(ctx, Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                     }
                 }
                 if (r.update) {

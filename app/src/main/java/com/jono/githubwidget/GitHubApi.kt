@@ -49,6 +49,8 @@ object Refresher {
     /** Only the newest repos get the extra per-repo calls; older ones keep what they had. */
     private const val DETAILED = 20
 
+    private val SESSION = Regex("""Claude-Session:\s*(https://claude\.ai/code/[A-Za-z0-9_\-]+)""")
+
     fun refresh(ctx: Context) {
         val token = Store.token(ctx) ?: run { Store.markRefreshing(ctx, false); return }
         try {
@@ -93,7 +95,7 @@ object Refresher {
 
     private fun details(token: String, repo: Store.Repo, prev: Store.Repo?, detailed: Boolean): Store.Repo {
         // Nothing new since a settled look (finished CI, checked well after the push): reuse it.
-        val settled = prev != null && prev.checked && prev.pushedAt == repo.pushedAt &&
+        val settled = prev != null && prev.checked && prev.ver >= Store.DETAILS_VER && prev.pushedAt == repo.pushedAt &&
             prev.fetchedAt - prev.pushedAt > 10 * 60_000 &&
             (prev.run == null || prev.run.status == "completed")
         if (settled) return repo.withDetailsOf(prev!!)
@@ -117,15 +119,21 @@ object Refresher {
             // No Actions access or no Actions: fall through to the commit.
         }
 
+        // Recent commits: the latest message, and the newest "Claude-Session:" link among them.
         var lastCommit: String? = null
-        if (run == null) {
-            try {
-                val commits = JSONArray(GitHubApi.get(token, "/repos/${repo.fullName}/commits?per_page=1"))
-                lastCommit = commits.optJSONObject(0)?.optJSONObject("commit")?.str("message")
-            } catch (e: GitHubApi.HttpError) {
-                // Empty repo (409) or no access.
+        var session: String? = null
+        try {
+            val commits = JSONArray(GitHubApi.get(token, "/repos/${repo.fullName}/commits?per_page=20"))
+            val messages = (0 until commits.length()).mapNotNull {
+                commits.optJSONObject(it)?.optJSONObject("commit")?.str("message")
             }
+            lastCommit = messages.firstOrNull()
+            session = messages.firstNotNullOfOrNull { SESSION.find(it)?.groupValues?.get(1) }
+        } catch (e: GitHubApi.HttpError) {
+            // Empty repo (409) or no access.
         }
-        return repo.withDetails(System.currentTimeMillis(), run, lastBuild, lastCommit)
+        return repo.withDetails(
+            System.currentTimeMillis(), run, lastBuild, lastCommit, session ?: prev?.session,
+        )
     }
 }

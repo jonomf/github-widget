@@ -33,6 +33,14 @@
                 <TextView android:id="@+id/name" style="@style/Name" />
                 <TextView android:id="@+id/update" style="@style/UpdateChip" />
                 <TextView android:id="@+id/age" style="@style/Age" />
+                <!-- Opens the Claude session that last pushed to this repo. -->
+                <ImageView
+                    android:id="@+id/claude"
+                    style="@style/ClaudeLink"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_marginStart="6dp"
+                    android:padding="3dp" />
             </LinearLayout>
 
             <LinearLayout
