@@ -123,7 +123,7 @@ object Refresher {
             }
             // The APK workflow is build.yml; its run number is the build's versionCode.
             lastBuild = list.firstOrNull {
-                (it.str("path") ?: "").endsWith("build.yml") && it.str("conclusion") == "success"
+                it.str("path") == ".github/workflows/build.yml" && it.str("conclusion") == "success"
             }?.optInt("run_number")
         } catch (e: GitHubApi.HttpError) {
             // No Actions access or no Actions: fall through to the commit.
