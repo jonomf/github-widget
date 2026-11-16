@@ -95,8 +95,8 @@ object Store {
         }
     }
 
-    /** Bumped when the details lookup learns something new (2: Claude session links). */
-    const val DETAILS_VER = 2
+    /** Bumped when the details lookup learns something new (2: Claude session links, 3: stricter build matching). */
+    const val DETAILS_VER = 3
 
     /** A string field, or null when missing, JSON null or blank. */
     fun JSONObject.str(key: String): String? =
