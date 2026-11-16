@@ -1,32 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 1×1: just the round Repos icon (no background), with a pip on its corner only when an
-     installed app from your repos has a newer build. Tap for the full list. -->
+<!-- 1×1: the round Repos icon on the wallpaper (no background). The update pip is drawn into
+     the image itself (Apps.tileIcon), so it always sits on the icon's corner. Tap for the full list. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="2dp">
 
-    <!-- Wraps the icon tightly so the pip sits on the icon's corner, not the cell's. -->
-    <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="center">
-
-        <ImageView
-            android:id="@+id/art"
-            style="@style/Cover"
-            android:layout_gravity="center" />
-
-        <ImageView
-            android:id="@+id/badge"
-            android:layout_width="18dp"
-            android:layout_height="18dp"
-            android:layout_gravity="top|end"
-            android:background="@drawable/badge_bg"
-            android:contentDescription="Updates available"
-            android:padding="3dp"
-            android:src="@drawable/ic_update"
-            android:visibility="gone" />
-    </FrameLayout>
+    <ImageView
+        android:id="@+id/art"
+        style="@style/Cover"
+        android:layout_gravity="center" />
 </FrameLayout>

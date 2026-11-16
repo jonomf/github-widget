@@ -37,6 +37,8 @@ class PanelActivity : Activity() {
     override fun onResume() {
         super.onResume()
         WidgetRenderer.listeners.add(redraw)
+        // Keep the widget in step with what the pop-up shows (e.g. the 1×1's update pip).
+        Thread { WidgetRenderer.renderAll(applicationContext) }.start()
         render()
     }
 

@@ -63,6 +63,41 @@ object Apps {
         return saved(ctx, "app:${gh.pkg}:${gh.updatedAt}") { appBitmap(ctx, gh.pkg) }
     }
 
+    /**
+     * The 1×1 image: this app's round icon, with the update pip drawn onto its top-right corner
+     * when [updates] > 0. One image, so the pip can never be hidden or misplaced by the layout.
+     */
+    fun tileIcon(ctx: Context, updates: Int): Uri {
+        val night = (ctx.resources.configuration.uiMode and
+            android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+        val self = installed(ctx, ctx.packageName)
+        return saved(ctx, "self:${self?.updatedAt}:${updates > 0}:$night:v2") {
+            val size = 192
+            val b = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+            val c = Canvas(b)
+            val icon = ctx.packageManager.getApplicationIcon(ctx.packageName)
+            val inset = (size * 0.06f).toInt() // room for the pip to sit on the edge
+            icon.setBounds(inset, inset, size - inset, size - inset)
+            icon.draw(c)
+            if (updates > 0) {
+                val r = size * 0.19f
+                val cx = size - r - 1f
+                val cy = r + 1f
+                val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+                paint.color = ctx.getColor(R.color.widget_bg) // thin ring so it reads on any icon
+                c.drawCircle(cx, cy, r, paint)
+                paint.color = ctx.getColor(R.color.accent_text)
+                c.drawCircle(cx, cy, r * 0.84f, paint)
+                ctx.getDrawable(R.drawable.ic_update)?.let { arrow ->
+                    val a = (r * 0.55f).toInt()
+                    arrow.setBounds((cx - a).toInt(), (cy - a).toInt(), (cx + a).toInt(), (cy + a).toInt())
+                    arrow.draw(c)
+                }
+            }
+            b
+        }
+    }
+
     fun iconFile(ctx: Context, id: String) = File(File(ctx.filesDir, "icons").apply { mkdirs() }, "$id.png")
 
     private fun saved(ctx: Context, key: String, draw: () -> Bitmap): Uri {

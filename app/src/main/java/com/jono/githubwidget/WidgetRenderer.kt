@@ -208,15 +208,17 @@ object WidgetRenderer {
             else -> panel
         }
         when {
-            kind.appArt -> rv.setImageViewResource(R.id.art, R.mipmap.ic_launcher)
+            kind.appArt -> rv.setImageViewUri(R.id.art, Apps.tileIcon(ctx, m.rows.count { it.update }))
             top != null -> rv.setImageViewUri(R.id.art, top.icon)
             else -> rv.setImageViewResource(R.id.art, R.drawable.tile_placeholder)
         }
         if (kind == Kind.TILE) {
             // Update badge: an installed app from one of your repos has a newer build on GitHub.
             val updates = m.rows.count { it.update }
-            rv.setViewVisibility(R.id.badge, if (updates > 0) View.VISIBLE else View.GONE)
-            rv.setContentDescription(R.id.badge, "$updates update" + (if (updates == 1) "" else "s") + " available")
+            rv.setContentDescription(
+                R.id.art,
+                if (updates == 0) "Repos" else "Repos, $updates update" + (if (updates == 1) "" else "s") + " available",
+            )
         }
         rv.setOnClickPendingIntent(R.id.art, tap)
 
