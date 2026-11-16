@@ -49,15 +49,13 @@ class MainActivity : Activity() {
             setPadding(pad, pad * 2, pad, pad)
         }
 
-        // Title, with the installed GitHub app's own icon beside it.
+        // Title, with this app's icon beside it.
         col.addView(LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            Apps.githubPkg(this@MainActivity)?.let { pkg ->
-                addView(ImageView(this@MainActivity).apply {
-                    setImageDrawable(packageManager.getApplicationIcon(pkg))
-                }, LinearLayout.LayoutParams(dp(40), dp(40)).apply { marginEnd = dp(12) })
-            }
+            addView(ImageView(this@MainActivity).apply {
+                setImageResource(R.mipmap.ic_launcher)
+            }, LinearLayout.LayoutParams(dp(40), dp(40)).apply { marginEnd = dp(12) })
             addView(TextView(this@MainActivity).apply {
                 text = getString(R.string.app_name)
                 textSize = 28f

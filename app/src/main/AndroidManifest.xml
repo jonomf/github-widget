@@ -17,6 +17,11 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
+        <!-- Apps that have home-screen widgets, even ones with no app-drawer icon, so widget-only
+             apps built from your repos are matched too (for their icon and the update pip). -->
+        <intent>
+            <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        </intent>
         <!-- Finding your browser, so APK downloads open there rather than in the GitHub app. -->
         <intent>
             <action android:name="android.intent.action.VIEW" />
