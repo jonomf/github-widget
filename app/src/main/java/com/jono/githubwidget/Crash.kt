@@ -35,5 +35,19 @@ class App : Application() {
             Crash.record(this, e, fatal = true)
             previous?.uncaughtException(t, e)
         }
+
+        // While this app is running, redraw as soon as any app is installed, updated or removed,
+        // so the 1×1 update pip and the Update chips clear right after you install a new build.
+        // (Android doesn't deliver these to apps that aren't running; then the 15-minute refresh
+        // or opening the pop-up catches up.)
+        val filter = android.content.IntentFilter().apply {
+            addAction(android.content.Intent.ACTION_PACKAGE_ADDED)
+            addAction(android.content.Intent.ACTION_PACKAGE_REPLACED)
+            addAction(android.content.Intent.ACTION_PACKAGE_REMOVED)
+            addDataScheme("package")
+        }
+        registerReceiver(object : android.content.BroadcastReceiver() {
+            override fun onReceive(c: Context, i: android.content.Intent) = WidgetRenderer.renderAll(c)
+        }, filter, Context.RECEIVER_EXPORTED)
     }
 }
