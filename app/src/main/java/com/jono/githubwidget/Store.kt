@@ -40,18 +40,21 @@ object Store {
         val ver: Int = 0,
         /** The repo's GitHub Pages site, if it has one. */
         val pages: String? = null,
+        /** The Android applicationId built from this repo, read from its app/build.gradle(.kts). */
+        val appId: String? = null,
     ) {
         val releasesUrl get() = "$htmlUrl/releases/latest"
 
         fun withDetails(
-            fetchedAt: Long, run: Run?, lastBuild: Int?, lastCommit: String?, session: String?, ver: Int = DETAILS_VER,
+            fetchedAt: Long, run: Run?, lastBuild: Int?, lastCommit: String?, session: String?,
+            appId: String?, ver: Int = DETAILS_VER,
         ) = Repo(
             fullName, owner, name, htmlUrl, description, language, pushedAt, isPrivate, fork, archived,
-            true, fetchedAt, run, lastBuild, lastCommit, session, ver, pages,
+            true, fetchedAt, run, lastBuild, lastCommit, session, ver, pages, appId,
         )
 
         fun withDetailsOf(prev: Repo) =
-            withDetails(prev.fetchedAt, prev.run, prev.lastBuild, prev.lastCommit, prev.session, prev.ver)
+            withDetails(prev.fetchedAt, prev.run, prev.lastBuild, prev.lastCommit, prev.session, prev.appId, prev.ver)
 
         fun toJson(): JSONObject = JSONObject().apply {
             put("full", fullName); put("owner", owner); put("name", name); put("url", htmlUrl)
@@ -60,7 +63,7 @@ object Store {
             put("checked", checked); put("fetched", fetchedAt)
             put("lastBuild", lastBuild ?: JSONObject.NULL); put("lastCommit", lastCommit ?: JSONObject.NULL)
             put("session", session ?: JSONObject.NULL); put("ver", ver)
-            put("pages", pages ?: JSONObject.NULL)
+            put("pages", pages ?: JSONObject.NULL); put("appId", appId ?: JSONObject.NULL)
             run?.let {
                 put("run", JSONObject().apply {
                     put("status", it.status); put("conclusion", it.conclusion ?: JSONObject.NULL)
@@ -91,12 +94,13 @@ object Store {
                 session = j.str("session"),
                 ver = j.optInt("ver"),
                 pages = j.str("pages"),
+                appId = j.str("appId"),
             )
         }
     }
 
-    /** Bumped when the details lookup learns something new (2: Claude session links, 3: stricter build matching). */
-    const val DETAILS_VER = 3
+    /** Bumped when the details lookup learns something new (2: Claude session links, 3: stricter build matching, 4: real app ids). */
+    const val DETAILS_VER = 4
 
     /** A string field, or null when missing, JSON null or blank. */
     fun JSONObject.str(key: String): String? =

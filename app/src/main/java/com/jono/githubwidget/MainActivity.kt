@@ -251,7 +251,7 @@ class MainActivity : Activity() {
         val ghLine = if (gh != null) "✓ GitHub app found ($gh)\n" else "GitHub app not found, so repos open in the browser\n"
         val apps = Store.visibleRepos(this).mapNotNull { r -> Apps.installed(this, r)?.let { r to it } }
         matched.text = ghLine + if (apps.isEmpty()) {
-            "None found yet. An app matches a repo when its package is com.jono.<repo name without dashes>."
+            "None found yet. An app matches a repo by the applicationId in the repo's app/build.gradle.kts."
         } else {
             apps.joinToString("\n") { (r, app) ->
                 val latest = r.lastBuild?.let { if (it > app.build) " → build $it on GitHub" else " (latest)" } ?: ""

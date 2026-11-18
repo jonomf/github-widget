@@ -142,8 +142,30 @@ object Refresher {
         } catch (e: GitHubApi.HttpError) {
             // Empty repo (409) or no access.
         }
+        // Repos that build an APK: read the real applicationId, so installed apps match even when
+        // the package isn't com.jono.<repo name> (e.g. flick-widget → com.jono.flick).
+        val appId = if (lastBuild != null || prev?.appId != null) {
+            readAppId(token, repo.fullName) ?: prev?.appId
+        } else {
+            null
+        }
         return repo.withDetails(
-            System.currentTimeMillis(), run, lastBuild, lastCommit, session ?: prev?.session,
+            System.currentTimeMillis(), run, lastBuild, lastCommit, session ?: prev?.session, appId,
         )
+    }
+
+    private val APP_ID = Regex("""applicationId\s*=?\s*["']([A-Za-z0-9_.]+)["']""")
+
+    private fun readAppId(token: String, fullName: String): String? {
+        for (file in listOf("app/build.gradle.kts", "app/build.gradle")) {
+            try {
+                val j = JSONObject(GitHubApi.get(token, "/repos/$fullName/contents/$file"))
+                val text = String(android.util.Base64.decode(j.optString("content"), android.util.Base64.DEFAULT))
+                APP_ID.find(text)?.let { return it.groupValues[1] }
+            } catch (e: Exception) {
+                // Not there; try the next one.
+            }
+        }
+        return null
     }
 }

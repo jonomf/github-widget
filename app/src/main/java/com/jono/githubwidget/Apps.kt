@@ -22,8 +22,8 @@ object Apps {
 
     class Installed(val pkg: String, val build: Long, val updatedAt: Long)
 
-    /** Jono's apps use package com.jono.<repo name without dashes>, e.g. com.jono.audiobookwidget. */
-    fun pkgFor(repo: Store.Repo) = "com.jono." + repo.name.lowercase().filter { it.isLetterOrDigit() }
+    /** The repo's real applicationId when known, else the usual com.jono.<repo name without dashes>. */
+    fun pkgFor(repo: Store.Repo) = repo.appId ?: ("com.jono." + repo.name.lowercase().filter { it.isLetterOrDigit() })
 
     fun installed(ctx: Context, pkg: String): Installed? = try {
         val pi = ctx.packageManager.getPackageInfo(pkg, 0)
