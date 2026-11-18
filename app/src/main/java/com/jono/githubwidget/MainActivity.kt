@@ -75,6 +75,7 @@ class MainActivity : Activity() {
         col.addView(errorBox)
         showLastError()
 
+        ClaudeLink.addTopButton(this, col)
         try {
             buildSections(col)
         } catch (e: Exception) {

@@ -9,6 +9,7 @@ class ReposWidget : AppWidgetProvider() {
 
     /** Placed, rebooted, or this app updated: redraw with the saved list, then fetch a fresh one. */
     override fun onUpdate(ctx: Context, mgr: AppWidgetManager, ids: IntArray) {
+        ClaudeLink.syncShortcut(ctx)
         WidgetRenderer.renderAll(ctx)
         try {
             RefreshJob.schedule(ctx)
