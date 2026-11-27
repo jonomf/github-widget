@@ -70,6 +70,12 @@ class MainActivity : Activity() {
             setPadding(0, dp(12), 0, dp(8))
         })
 
+        // First button: the full repo list (same pop-up as tapping a small widget).
+        col.addView(Button(this).apply {
+            text = "Show repo list"
+            setOnClickListener { startActivity(Intent(this@MainActivity, PanelActivity::class.java)) }
+        })
+
         // --- Last error, if any: shown first so it's visible even if the rest fails ---
         errorBox = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         col.addView(errorBox)
